@@ -17,7 +17,7 @@ connection.connect((err) => {
 
 app.use(express.json());
 
-app.use("/api/seats", seatRouter);
+app.use("/api/seats", seatRouter(connection));
 
 
 app.listen(8080, () => {

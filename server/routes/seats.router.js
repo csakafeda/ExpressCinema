@@ -16,16 +16,30 @@ const seatRouter = (connection) => {
         });
     });
 
+    router.get("/available", (req, res) => {
+        connection.query('SELECT * FROM seats WHERE status = "available"', (err, result) => {
+            if (err) {
+                console.error(err);
+                res.status(500).json({error: 'Failed to fetch available seats.'});
+                return;
+            }
+            console.log(result);
+            res.json(result);
+        });
+    })
+
     router.post('/reserve', (req, res) => {
         const seatId = parseInt(req.body.seatId);
         const userId = req.body.userId;
 
         connection.query('SELECT * FROM seats WHERE id = ? AND status = "available"', [seatId], (err, results) => {
-            if (err) {
+            if (err){
+                console.log(results);
                 console.error(err);
                 res.status(500).json({error: 'Failed to reserve the seat.'});
                 return;
             }
+
 
             if (results.length === 0) {
                 res.status(400).json({error: 'The seat cannot be reserved.'});
@@ -38,7 +52,6 @@ const seatRouter = (connection) => {
                     res.status(500).json({error: 'Failed to reserve the seat.'});
                     return;
                 }
-
                 res.json({message: 'Reservation successful.'});
             });
         });
@@ -69,8 +82,7 @@ const seatRouter = (connection) => {
                 }
 
                 // TODO: Implement email sending using Nodemailer
-
-                res.json({message: 'Payment successful.'});
+                res.json("Payment successful")
             });
         });
     });

@@ -82,7 +82,32 @@ const seatRouter = (connection) => {
                 }
 
                 // TODO: Implement email sending using Nodemailer
-                res.json("Payment successful")
+                const transporter = nodemailer.createTransport({
+                    host: "smtp.gmail.com",
+                    post: 465,
+                    secure: true,
+                    auth: {
+                        user: 'noreply.fedadev@gmail.com',
+                        pass: 'sstowphcbunzsjhp'
+                    }
+                });
+
+                const mail = {
+                    from: 'noreply.fedadev@gmail.com',
+                    to: userEmail,
+                    subject: 'Payment Confirmation - Express Cinema',
+                    text: 'Your payment was successful. Thank you!'
+                };
+
+                transporter.sendMail(mail, (error) => {
+                    if (error) {
+                        console.error(error);
+                        res.status(500).json({error: 'Failed to send email.'});
+                        return;
+                    } else{
+                        res.json({message: 'Payment successful.'});
+                    }
+                });
             });
         });
     });

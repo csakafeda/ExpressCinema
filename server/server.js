@@ -2,7 +2,9 @@ const express = require('express');
 const app = express();
 const seatRouter = require("./routes/seatRouter");
 const con = require("./config/db.js")
+const cors = require('cors');
 
+app.use(cors())
 app.use(express.json());
 app.use(function(req, res, next) {
     req.con = con

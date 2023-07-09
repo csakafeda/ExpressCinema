@@ -1,11 +1,14 @@
 import React, {useEffect, useState} from "react";
 import {Box, Button, Card, CardContent, CircularProgress, Grid, TextField, Typography} from "@mui/material";
-import {getAllSeats, purchaseSeats} from "../../API/seatAPI";
+import {getAllSeats, purchaseSeats, reserveSeats} from "../../API/seatAPI";
+import {useNavigate} from "react-router-dom";
 
 const ROWS = ["A", "B", "C", "D", "E"];
 const SEATS_PER_ROW = 6;
 
 export const Reservation: React.FC = () => {
+    const navigate = useNavigate();
+
     const [seats, setSeats] = useState<{ id: number; status: string; userId: number | null }[]>([]);
     const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
     const [showCard, setShowCard] = useState<boolean>(false);
@@ -52,6 +55,7 @@ export const Reservation: React.FC = () => {
                 setSelectedSeats(selectedSeats.filter((id) => id !== seatId));
             } else {
                 setSelectedSeats([...selectedSeats, seatId]);
+                reserveSeats(seatId, 1);
             }
         }
     };
@@ -73,6 +77,8 @@ export const Reservation: React.FC = () => {
     };
     const handlePurchase = () => {
         purchaseSeats(selectedSeats, formData);
+        alert("Payment successful. Check your email with the confirmation.");
+        navigate("/");
     }
 
     const renderSeats = () => {

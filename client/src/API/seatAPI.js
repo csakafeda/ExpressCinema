@@ -1,0 +1,47 @@
+export const getAllSeats = () => {
+    return fetch("http://localhost:8080/api/seats")
+        .then((res) => res.json())
+        .catch((error) => {
+            console.error("Error fetching seats:", error);
+        })
+};
+
+export const reserveSeats = (seat, userId) => {
+    return fetch("http://localhost:8080/api/seats/reserve", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({seatId: seat, userId: userId})
+    })
+        .then((response) => {
+            if (response.ok) {
+                console.log("Reservation successful!");
+            } else {
+                console.error("Failed to make reservation.");
+            }
+        })
+        .catch((error) => {
+            console.error("Error making reservation:", error);
+        });
+}
+
+export const purchaseSeats = (seats, formData) => {
+    return fetch("http://localhost:8080/api/seats/pay", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({seatId: seats, userId: 1, email: formData.email})
+    })
+        .then((response) => {
+            if (response.ok) {
+                console.log("Pay successful!");
+            } else {
+                console.error("Failed to make payment.");
+            }
+        })
+        .catch((error) => {
+            console.error("Error making payment:", error);
+        });
+}

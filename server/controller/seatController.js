@@ -8,15 +8,21 @@ module.exports = {
         })
     },
     postSeat: (req, res) => {
-        seatModel.postSeat(req.con, (err, result) => {
-            if (err) {
-                console.error(err);
-                res.status(500).json({error: "Failed to add the seat."});
-                return;
-            }
-            const newSeatId = result.insertId;
-            res.json({id: newSeatId, status: "available", userId: null})
-        })
+        seatModel.getAllSeats(req.con, (err, seats) => {
+            const lowestAvailableId = getLowestAvailableId(seats);
+            const newSeat = {id: lowestAvailableId, status: "available", userId: null};
+
+            seatModel.postSeat(req.con, newSeat, (err, result) => {
+                if (err) {
+                    console.error(err);
+                    res.status(500).json({error: "Failed to add the seat."});
+                    return;
+                }
+
+                const newSeatId = result.insertId;
+                res.json({id: newSeatId, status: "available", userId: null});
+            });
+        });
     },
     reserveSeat: (req, res) => {
         const seatId = req.body.seatId;
@@ -77,4 +83,16 @@ module.exports = {
             res.json({message: 'Delete was successful.'});
         });
     }
+}
+
+function getLowestAvailableId(seats) {
+    const sortedSeats = seats.sort((a, b) => a.id - b.id);
+    let lowestId = 1;
+    for (const seat of sortedSeats) {
+        if (seat.id > lowestId) {
+            return lowestId;
+        }
+        lowestId++;
+    }
+    return -1;
 }

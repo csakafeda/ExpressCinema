@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Box, Button, Card, CardContent, CircularProgress, Grid, TextField, Typography,} from "@mui/material";
+import {Box, Button, Card, CardContent, CircularProgress, Grid, TextField, Typography} from "@mui/material";
 import {getAllSeats, purchaseSeats, reserveSeats} from "../../API/seatAPI";
 import {useNavigate} from "react-router-dom";
 
@@ -152,8 +152,8 @@ export const Reservation: React.FC = () => {
             <div style={{textAlign: "center", marginTop: "5vh"}}>
                 Make your reservation for tomorrow.
             </div>
-            <Grid container style={{ justifyContent: "center" }}>
-                <Grid item md={2} style={{ justifyContent: "center"}}>
+            <Grid container style={{justifyContent: "center"}}>
+                <Grid item md={2} style={{justifyContent: "center"}}>
                     {renderSeats()}
                 </Grid>
             </Grid>
@@ -178,47 +178,49 @@ export const Reservation: React.FC = () => {
                                         Seat {seatId}
                                     </Typography>
                                 ))}
-                                <TextField
-                                    required
-                                    label="Firstname"
-                                    value={formData.firstname}
-                                    onChange={handleFirstnameChange}
-                                    fullWidth
-                                    margin="normal"
-                                />
-                                <TextField
-                                    required
-                                    label="Lastname"
-                                    value={formData.lastname}
-                                    onChange={handleLastnameChange}
-                                    fullWidth
-                                    margin="normal"
-                                />
-                                <TextField
-                                    required
-                                    label="Email"
-                                    value={formData.email}
-                                    onChange={handleEmailChange}
-                                    type="email"
-                                    fullWidth
-                                    margin="normal"
-                                />
-                                <TextField
-                                    required
-                                    label="Address"
-                                    value={formData.address}
-                                    onChange={handleAddressChange}
-                                    fullWidth
-                                    margin="normal"
-                                />
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    style={{marginTop: "1rem"}}
-                                    onClick={handlePurchase}
-                                >
-                                    Confirm Reservation
-                                </Button>
+                                <form onSubmit={handlePurchase}>
+                                    <TextField
+                                        required
+                                        label="Firstname"
+                                        value={formData.firstname}
+                                        onChange={handleFirstnameChange}
+                                        fullWidth
+                                        margin="normal"
+                                    />
+                                    <TextField
+                                        required
+                                        label="Lastname"
+                                        value={formData.lastname}
+                                        onChange={handleLastnameChange}
+                                        fullWidth
+                                        margin="normal"
+                                    />
+                                    <TextField
+                                        required
+                                        label="Email"
+                                        value={formData.email}
+                                        onChange={handleEmailChange}
+                                        type="email"
+                                        fullWidth
+                                        margin="normal"
+                                    />
+                                    <TextField
+                                        required
+                                        label="Address"
+                                        value={formData.address}
+                                        onChange={handleAddressChange}
+                                        fullWidth
+                                        margin="normal"
+                                    />
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        style={{marginTop: "1rem"}}
+                                        type="submit"
+                                    >
+                                        Confirm Payment
+                                    </Button>
+                                </form>
                             </CardContent>
                         </Card>
                     </Grid>

@@ -1,14 +1,14 @@
 export const themeOptions = {
     palette: {
         primary: {
-            main: '#bfc6f5',
+            main: '#0825f8',
         },
         secondary: {
             main: '#ec4c4c',
         },
         background: {
             default: '#fde0e2',
-            paper: '#0003d2',
+            paper: '#7375d2',
         },
         text: {
             primary: '#000000',

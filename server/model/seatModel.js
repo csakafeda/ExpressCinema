@@ -11,13 +11,13 @@ module.exports = {
     updateToReserved: (seatId, userId, con, callback) => {
         con.query('UPDATE seats SET status = "reserved", userId = ? WHERE id = ?', [userId, seatId], callback);
     },
-    paySeats: (seatId, userId, con, callback) => {
-        con.query('SELECT * FROM seats WHERE id = ? AND status = "reserved"', [seatId], callback);
+    paySeats: (seatIds, userId, con, callback) => {
+        con.query('SELECT * FROM seats WHERE id IN (?) AND status = "reserved"', [seatIds], callback);
     },
-    updateToSold: (seatId, userId, con, callback) => {
-        con.query('UPDATE seats SET status = "sold", userId = ? WHERE id = ?', [userId, seatId], callback);
+    updateToSold: (seatIds, userId, con, callback) => {
+        con.query('UPDATE seats SET status = "sold", userId = ? WHERE id IN (?)', [userId, seatIds], callback);
     },
-    deleteAllSeats: function (con, callback) {
+    deleteAllSeats: (con, callback) => {
         const dropQuery = "DROP TABLE IF EXISTS seats";
         const createQuery =
             "CREATE TABLE seats (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, status VARCHAR(255) NOT NULL, userId INT)";

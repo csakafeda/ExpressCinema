@@ -38,7 +38,7 @@ module.exports = {
                 res.status(404).json({error: "Seat not found or already reserved."});
             }
         });
-        seatModel.updateToReserved(seatId, userId, req.con, (err, result) => {
+        seatModel.updateToReserved(seatId, userId, req.con, (err) => {
             if (err) {
                 console.error(err);
                 res.status(500).json({error: 'Failed to reserve the seat.'});
@@ -48,10 +48,10 @@ module.exports = {
         })
     },
     paySeats: (req, res) => {
-        const seatId = parseInt(req.body.seatId);
+        const seatIds = req.body.seatIds;
         const userId = parseInt(req.body.userId);
         const userEmail = req.body.email;
-        seatModel.paySeats(seatId, userId, req.con, (err, result) => {
+        seatModel.paySeats(seatIds, userId, req.con, (err, result) => {
             if (err) {
                 console.error(err);
                 res.status(500).json({error: 'Failed to process payment.'});
@@ -60,13 +60,13 @@ module.exports = {
             if (result.length === 0) {
                 res.status(400).json({error: 'The seat cannot be paid for.'});
             } else {
-                seatModel.updateToSold(seatId, userId, req.con, (err, updateResult) => {
+                seatModel.updateToSold(seatIds, userId, req.con, (err) => {
                     if (err) {
                         console.error(err);
                         res.status(500).json({error: 'Failed to process payment.'});
                         return;
                     }
-                    mailSender({"seatId": seatId, "userEmail": userEmail})
+                    mailSender({"seatIds": seatIds, "userEmail": userEmail})
                         .then((result) => {
                             res.json(result === "error" ? {error: 'Failed to send email.'} : {message: 'Payment successful.'});
                         })
@@ -75,7 +75,7 @@ module.exports = {
         })
     },
     deleteAllSeats: (req, res) => {
-        seatModel.deleteAllSeats(req.con, (err, result) => {
+        seatModel.deleteAllSeats(req.con, (err) => {
             if (err) {
                 res.status(500).json({error: 'Failed to delete all seats.'});
                 return;

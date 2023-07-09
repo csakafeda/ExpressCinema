@@ -70,8 +70,11 @@ module.exports = {
                         .then((result) => {
                             res.json(result === "error" ? {error: 'Failed to send email.'} : {message: 'Payment successful.'});
                         })
+
                 })
+
             }
+
         })
     },
     deleteAllSeats: (req, res) => {

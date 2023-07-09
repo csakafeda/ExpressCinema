@@ -15,7 +15,12 @@ module.exports = {
         con.query('SELECT * FROM seats WHERE id IN (?) AND status = "reserved"', [seatIds], callback);
     },
     updateToSold: (seatIds, userId, con, callback) => {
-        con.query('UPDATE seats SET status = "sold", userId = ? WHERE id IN (?)', [userId, seatIds], callback);
+        const placeholders = seatIds.map(() => '(?)').join(', ');
+        const params = [userId, ...seatIds];
+
+        const query = `UPDATE seats SET status = "sold", userId = ? WHERE id IN (${placeholders})`;
+
+        con.query(query, params, callback);
     },
     deleteAllSeats: (con, callback) => {
         const dropQuery = "DROP TABLE IF EXISTS seats";

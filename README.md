@@ -6,7 +6,9 @@
 
 ### About the project
 
-This is a homework project with these criterias:  
+This is a little website, where you can reserve seats in an outdoor cinema for your favorite movies.
+
+The projects tasks are:    
 You are given a cinema, a room with 2 free seats.
 1. Make sure you can book these free seats via the web!
 2. Only 1 successful reservation per seat is possible at a time.

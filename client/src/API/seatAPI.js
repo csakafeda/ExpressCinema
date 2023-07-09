@@ -32,7 +32,7 @@ export const purchaseSeats = (seats, formData) => {
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({seatId: seats, userId: 1, email: formData.email})
+        body: JSON.stringify({seatIds: seats, userId: 1, email: formData.email})
     })
         .then((response) => {
             if (response.ok) {

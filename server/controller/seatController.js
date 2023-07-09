@@ -2,12 +2,12 @@ const seatModel = require("../model/seatModel");
 const mailSender = require("../tools/sendmail")
 
 module.exports = {
-    getAllSeats: function (req, res) {
+    getAllSeats: (req, res) => {
         seatModel.getAllSeats(req.con, function (err, result) {
             res.json(result);
         })
     },
-    postSeat: function (req, res) {
+    postSeat: (req, res) => {
         seatModel.postSeat(req.con, (err, result) => {
             if (err) {
                 console.error(err);
@@ -67,5 +67,14 @@ module.exports = {
                 })
             }
         })
+    },
+    deleteAllSeats: (req, res) => {
+        seatModel.deleteAllSeats(req.con, (err, result) => {
+            if (err) {
+                res.status(500).json({error: 'Failed to delete all seats.'});
+                return;
+            }
+            res.json({message: 'Delete was successful.'});
+        });
     }
 }

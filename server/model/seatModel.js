@@ -16,5 +16,8 @@ module.exports = {
     },
     updateToSold: (seatId, userId, con, callback) => {
         con.query('UPDATE seats SET status = "sold", userId = ? WHERE id = ?', [userId, seatId], callback);
+    },
+    deleteAllSeats: function (con, callback) {
+        con.query("DELETE FROM seats", callback);
     }
 }

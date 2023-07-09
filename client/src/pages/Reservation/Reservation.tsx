@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {Box, Button, Card, CardContent, CircularProgress, Grid, TextField, Typography} from "@mui/material";
+import {getAllSeats, purchaseSeats} from "../../API/seatAPI";
 
 const ROWS = ["A", "B", "C", "D", "E"];
 const SEATS_PER_ROW = 6;
@@ -21,24 +22,13 @@ export const Reservation: React.FC = () => {
     });
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    const getAllSeats = () => {
-        setIsLoading(true);
-        fetch("http://localhost:8080/api/seats")
-            .then((res) => res.json())
-            .then((seats) => {
-                setSeats(seats);
-            })
-            .catch((error) => {
-                console.error("Error fetching seats:", error);
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
-    };
-
     useEffect(() => {
-        getAllSeats();
+        setIsLoading(true);
+        getAllSeats()
+            .then((res) => setSeats(res))
+            .finally(() => setIsLoading(false));
     }, []);
+
 
     const getSeatColor = (status: string, seatId: number): string => {
         if (selectedSeats.includes(seatId)) {
@@ -66,7 +56,7 @@ export const Reservation: React.FC = () => {
         }
     };
 
-    const handlePurchase = () => {
+    const handleFormDisplay = () => {
         setShowCard(true);
     };
     const handleFirstnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,6 +71,9 @@ export const Reservation: React.FC = () => {
     const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({...formData, address: e.target.value});
     };
+    const handlePurchase = () => {
+        purchaseSeats(selectedSeats, formData);
+    }
 
     const renderSeats = () => {
         const seatGrid = [];
@@ -129,13 +122,13 @@ export const Reservation: React.FC = () => {
     return (
         <>
             <div style={{textAlign: "center", marginTop: "2rem"}}>Make your reservation for tomorrow.</div>
-            <Grid container style={{marginTop: "2rem", justifyContent: "center" }}>
-                <Grid item xs={12} md={6} style={{ justifyContent: "center" }}>
+            <Grid container style={{marginTop: "2rem", justifyContent: "center"}}>
+                <Grid item xs={12} md={6} style={{justifyContent: "center"}}>
                     {renderSeats()}
                 </Grid>
             </Grid>
             <Box display="flex" justifyContent="center" marginTop="2rem">
-                <Button variant="contained" onClick={handlePurchase}>
+                <Button variant="contained" onClick={handleFormDisplay}>
                     Purchase
                 </Button>
             </Box>
@@ -181,7 +174,8 @@ export const Reservation: React.FC = () => {
                                     style={{marginBottom: "1rem"}}
                                 />
 
-                                <Button variant="contained" color="primary" style={{marginTop: "1rem"}}>
+                                <Button variant="contained" color="primary" style={{marginTop: "1rem"}}
+                                        onClick={handlePurchase}>
                                     Confirm Reservation
                                 </Button>
                             </CardContent>

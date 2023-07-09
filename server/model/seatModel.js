@@ -1,8 +1,8 @@
 module.exports = {
-    getAllSeats: function (con, callback) {
+    getAllSeats: (con, callback) => {
         con.query("SELECT * FROM seats", callback);
     },
-    postSeat: function (con, callback) {
+    postSeat: (con, callback) => {
         con.query("INSERT INTO seats (status) VALUES ('available')", callback);
     },
     reserveSeat: (seatId, con, callback) => {

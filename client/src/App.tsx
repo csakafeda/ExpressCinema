@@ -3,8 +3,8 @@ import Home from "./pages/Home";
 import {Reservation} from "./pages/Reservation";
 import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
-import {Navbar} from "./pages/Navbar";
-import {Footer} from "./pages/Footer";
+import {Navbar} from "./components/Navbar";
+import {Footer} from "./components/Footer";
 import {themeOptions} from "./Theme";
 
 function App() {

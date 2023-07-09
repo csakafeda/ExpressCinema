@@ -1,15 +1,16 @@
 const express = require('express');
-const mysql = require('mysql');
-
 const app = express();
+const seatRouter = require("./routes/seatRouter");
+const con = require("./config/db.js")
 
 app.use(express.json());
+app.use(function(req, res, next) {
+    req.con = con
+    next()
+})
 
-app.get('/', (req, res) => {
-    console.log("You are now at the '/' endpoint!");
-    res.sendStatus(200); // Sends a 200 OK response
-});
+app.use("/api/seats", seatRouter);
 
 app.listen(8080, () => {
-    console.log('Server is running on port 8080');
+    console.log('Server is running on port 8080.');
 });

@@ -7,17 +7,18 @@ export const Footer: React.FC = () => {
     return (
         <footer
             style={{
-                position: "fixed",
                 left: 0,
                 bottom: 0,
+                position: "fixed",
                 width: "100%",
-                marginTop: "2rem",
+                height: "15vh",
                 backgroundColor: "#2B6BB2",
                 padding: "1rem",
                 color: "white",
                 display: "flex",
                 justifyContent: "space-around",
-                alignItems: "center"
+                alignItems: "center",
+                zIndex: "1000"
             }}
         >
             <Box>
@@ -32,13 +33,19 @@ export const Footer: React.FC = () => {
                     Address: 1071 Budapest, Fő street 2.
                 </Typography>
             </Box>
-            <Box>
+            <Box style={{ margin: "10px" }}>
                 <Typography variant="h6">Follow us</Typography>
                 <a
-                    href="https://www.facebook.com/studycafe"
+                    href="https://www.facebook.com/bardiauto"
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ display: "flex", alignItems: "center", color: "white", textDecoration: "none" }}
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        color: "white",
+                        textDecoration: "none",
+                        margin: "0.2vw",
+                    }}
                 >
                     <img
                         src={facebookIcon}
@@ -48,10 +55,16 @@ export const Footer: React.FC = () => {
                     Facebook
                 </a>
                 <a
-                    href="https://www.instagram.com/thegardenstudioandcafe/"
+                    href="https://www.instagram.com/bardiauto/?hl=en"
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ display: "flex", alignItems: "center", color: "white", textDecoration: "none" }}
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        color: "white",
+                        textDecoration: "none",
+                        margin: "0.2vw",
+                    }}
                 >
                     <img
                         src={instagramIcon}

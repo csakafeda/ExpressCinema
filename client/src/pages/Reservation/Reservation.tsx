@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Box, Button, Card, CardContent, CircularProgress, Grid, TextField, Typography} from "@mui/material";
+import {Box, Button, Card, CardContent, CircularProgress, Grid, TextField, Typography,} from "@mui/material";
 import {getAllSeats, purchaseSeats, reserveSeats} from "../../API/seatAPI";
 import {useNavigate} from "react-router-dom";
 
@@ -9,7 +9,9 @@ const SEATS_PER_ROW = 6;
 export const Reservation: React.FC = () => {
     const navigate = useNavigate();
 
-    const [seats, setSeats] = useState<{ id: number; status: string; userId: number | null }[]>([]);
+    const [seats, setSeats] = useState<
+        { id: number; status: string; userId: number | null }[]
+    >([]);
     const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
     const [showCard, setShowCard] = useState<boolean>(false);
     const [formData, setFormData] = useState<{
@@ -63,23 +65,28 @@ export const Reservation: React.FC = () => {
     const handleFormDisplay = () => {
         setShowCard(true);
     };
+
     const handleFirstnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({...formData, firstname: e.target.value});
     };
+
     const handleLastnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({...formData, lastname: e.target.value});
     };
+
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({...formData, email: e.target.value});
     };
+
     const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({...formData, address: e.target.value});
     };
+
     const handlePurchase = () => {
         purchaseSeats(selectedSeats, formData);
         alert("Payment successful. Check your email with the confirmation.");
         navigate("/");
-    }
+    };
 
     const renderSeats = () => {
         const seatGrid = [];
@@ -103,9 +110,24 @@ export const Reservation: React.FC = () => {
                 );
             }
             seatGrid.push(
-                <div key={ROWS[row]} style={{display: "flex", alignItems: "center"}}>
+                <div
+                    key={ROWS[row]}
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        margin: "10px 0",
+                    }}
+                >
                     <div style={{width: "20px"}}>{ROWS[row]}</div>
-                    <div style={{display: "flex", justifyContent: "center"}}>{rowSeats}</div>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: "5px",
+                        }}
+                    >
+                        {rowSeats}
+                    </div>
                 </div>
             );
         }
@@ -126,10 +148,12 @@ export const Reservation: React.FC = () => {
     }
 
     return (
-        <>
-            <div style={{textAlign: "center", marginTop: "2rem"}}>Make your reservation for tomorrow.</div>
-            <Grid container style={{marginTop: "2rem", justifyContent: "center"}}>
-                <Grid item xs={12} md={6} style={{justifyContent: "center"}}>
+        <div style={{paddingBottom: "2rem"}}>
+            <div style={{textAlign: "center", marginTop: "5vh"}}>
+                Make your reservation for tomorrow.
+            </div>
+            <Grid container style={{ justifyContent: "center" }}>
+                <Grid item md={2} style={{ justifyContent: "center"}}>
                     {renderSeats()}
                 </Grid>
             </Grid>
@@ -139,14 +163,18 @@ export const Reservation: React.FC = () => {
                 </Button>
             </Box>
             {showCard && (
-                <Grid container justifyContent="center" style={{marginTop: "2rem"}}>
+                <Grid container justifyContent="center" style={{marginTop: "2rem", marginBottom: "15vh"}}>
                     <Grid item xs={12} md={6}>
                         <Card>
                             <CardContent>
-                                <Typography variant="h6">Reservation Details</Typography>
-                                <Typography variant="subtitle1">Selected Seats:</Typography>
+                                <Typography variant="h6" gutterBottom>
+                                    Reservation Details
+                                </Typography>
+                                <Typography variant="subtitle1" gutterBottom>
+                                    Selected Seats:
+                                </Typography>
                                 {selectedSeats.map((seatId) => (
-                                    <Typography key={seatId} variant="body2">
+                                    <Typography key={seatId} variant="body2" gutterBottom>
                                         Seat {seatId}
                                     </Typography>
                                 ))}
@@ -155,33 +183,40 @@ export const Reservation: React.FC = () => {
                                     label="Firstname"
                                     value={formData.firstname}
                                     onChange={handleFirstnameChange}
-                                    style={{marginBottom: "1rem"}}
+                                    fullWidth
+                                    margin="normal"
                                 />
                                 <TextField
                                     required
                                     label="Lastname"
                                     value={formData.lastname}
                                     onChange={handleLastnameChange}
-                                    style={{marginBottom: "1rem"}}
+                                    fullWidth
+                                    margin="normal"
                                 />
                                 <TextField
                                     required
                                     label="Email"
                                     value={formData.email}
                                     onChange={handleEmailChange}
-                                    style={{marginBottom: "1rem"}}
-                                    type={"email"}
+                                    type="email"
+                                    fullWidth
+                                    margin="normal"
                                 />
                                 <TextField
                                     required
                                     label="Address"
                                     value={formData.address}
                                     onChange={handleAddressChange}
-                                    style={{marginBottom: "1rem"}}
+                                    fullWidth
+                                    margin="normal"
                                 />
-
-                                <Button variant="contained" color="primary" style={{marginTop: "1rem"}}
-                                        onClick={handlePurchase}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    style={{marginTop: "1rem"}}
+                                    onClick={handlePurchase}
+                                >
                                     Confirm Reservation
                                 </Button>
                             </CardContent>
@@ -189,6 +224,6 @@ export const Reservation: React.FC = () => {
                     </Grid>
                 </Grid>
             )}
-        </>
+        </div>
     );
 };

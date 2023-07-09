@@ -56,7 +56,6 @@ module.exports = {
                 res.status(400).json({error: 'The seat cannot be paid for.'});
                 return;
             }
-            console.log(result)
 
             seatModel.updateToSold(seatId, userId, req.con, (err, updateResult) => {
                 if (err) {
@@ -64,7 +63,6 @@ module.exports = {
                     res.status(500).json({error: 'Failed to process payment.'});
                     return;
                 }
-                console.log(updateResult);
 
                 const transporter = nodemailer.createTransport({
                     host: "smtp.gmail.com",

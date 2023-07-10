@@ -18,7 +18,6 @@ module.exports = {
                     res.status(500).json({error: "Failed to add the seat."});
                     return;
                 }
-
                 const newSeatId = result.insertId;
                 res.json({id: newSeatId, status: "available", userId: null});
             });
@@ -70,11 +69,8 @@ module.exports = {
                         .then((result) => {
                             res.json(result === "error" ? {error: 'Failed to send email.'} : {message: 'Payment successful.'});
                         })
-
                 })
-
             }
-
         })
     },
     deleteAllSeats: (req, res) => {
@@ -85,6 +81,16 @@ module.exports = {
             }
             res.json({message: 'Delete was successful.'});
         });
+    },
+    reserveExpire: (req, res) => {
+        seatModel.reserveToAvailable(req.body.seatIds, req.con, (err) => {
+            if (err) {
+                console.error(err);
+                res.status(500).json({error: "Failed to reserve the seat."});
+                return;
+            }
+            res.json({message: 'Reservation expired.'});
+        })
     }
 }
 

@@ -25,7 +25,8 @@ After the booking has been successfully made, send an email to the customer's em
 
 - [![React][React-badge]][React-url]
 - [![Mui][Mui-badge]][Mui-url]
-- [![Express][Express-badge]][Express-url]
+- [![Node.js][Nodejs-badge]][Nodejs-url]
+- [![Express.js][Express-badge]][Express-url]
 - [![MySQL][MySQL-badge]][MySQL-url]
 
 ### Installation
@@ -51,8 +52,8 @@ After the booking has been successfully made, send an email to the customer's em
 - Open **localhost:3000** in your browser to access the application
 
   ### Plans
-- add websocket 
-- deploy in
+- add websocket to handle multiple users
+- make unit tests for backend
 - rewrite it in nuxt.js 
 
 [linkedin-shield-csakafeda]: https://img.shields.io/badge/-Feodóra%20Bakó-black.svg?style=for-the-badge&logo=linkedin&colorB=555
@@ -65,3 +66,5 @@ After the booking has been successfully made, send an email to the customer's em
 [MySQL-url]: https://www.mysql.com/
 [Mui-badge]: https://img.shields.io/badge/Material--UI-0081CB?style=for-the-badge&logo=material-ui&logoColor=white
 [Mui-url]: https://mui.com/
+[Nodejs-badge]:https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white
+[Nodejs-url]: https://nodejs.org/en

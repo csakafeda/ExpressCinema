@@ -2,7 +2,7 @@
 
 # ExpressCinema
 
-![Image](https://github.com/csakafeda/Moodily/assets/105170258/2fa67e6f-9443-401f-9cae-f66b0ad35a17)
+![Image](https://github.com/csakafeda/Moodily/assets/105170258/1d596d8c-b033-42d4-bdf8-61fe8aedfb58)
 
 ### About the project
 
@@ -44,6 +44,7 @@ After the booking has been successfully made, send an email to the customer's em
   EMAIL_PASSWORD=
   ```
   - open server folder in the terminal and run ```npm start```
+  - make as many post request as many seats you want to be available this endpoint: http://localhost:8080/api/seats/add_seat (max 30)
 - Frontend
   - Open the client folder in the terminal and run ```npm install``` to install the necessary dependencies
   - Run ```npm start``` to start the React server 

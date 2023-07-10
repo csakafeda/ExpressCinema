@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import {Box, Typography} from "@mui/material";
 import React from "react";
 import facebookIcon from "../assets/socials/facebook.png";
 import instagramIcon from "../assets/socials/instagram.png";
@@ -33,7 +33,7 @@ export const Footer: React.FC = () => {
                     Address: 1071 Budapest, Fő street 2.
                 </Typography>
             </Box>
-            <Box style={{ margin: "10px" }}>
+            <Box style={{margin: "10px"}}>
                 <Typography variant="h6">Follow us</Typography>
                 <a
                     href="https://www.facebook.com/bardiauto"
@@ -50,7 +50,7 @@ export const Footer: React.FC = () => {
                     <img
                         src={facebookIcon}
                         alt="Facebook"
-                        style={{ width: "2rem", height: "2rem", marginRight: "0.5rem" }}
+                        style={{width: "2rem", height: "2rem", marginRight: "0.5rem"}}
                     />
                     Facebook
                 </a>
@@ -69,7 +69,7 @@ export const Footer: React.FC = () => {
                     <img
                         src={instagramIcon}
                         alt="Instagram"
-                        style={{ width: "2rem", height: "2rem", marginRight: "0.5rem" }}
+                        style={{width: "2rem", height: "2rem", marginRight: "0.5rem"}}
                     />
                     Instagram
                 </a>

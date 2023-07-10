@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from "react";
-import {Typography} from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Typography } from "@mui/material";
 import Countdown from "react-countdown";
-import {NavigateFunction} from "react-router-dom";
+import { NavigateFunction } from "react-router-dom";
 
 interface CounterProps {
     seatIds: number[];
@@ -9,9 +9,9 @@ interface CounterProps {
     setIsCounting: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const Counter: React.FC<CounterProps> = ({seatIds, navigate, setIsCounting}) => {
-    const time = 2 * 60 * 1000;
-    const [remainingTime, setRemainingTime] = useState<number | null>(null);
+const Counter: React.FC<CounterProps> = ({ seatIds, navigate, setIsCounting }) => {
+    const time = 120000;
+    const [remainingTime, setRemainingTime] = useState<number | null>(time);
 
     const onComplete = () => {
         fetch("http://localhost:8080/api/seats/reserve_expire", {
@@ -19,7 +19,7 @@ export const Counter: React.FC<CounterProps> = ({seatIds, navigate, setIsCountin
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({seatIds: seatIds})
+            body: JSON.stringify({ seatIds: seatIds })
         })
             .then((response) => {
                 alert("Your reservation time is up!");
@@ -40,10 +40,11 @@ export const Counter: React.FC<CounterProps> = ({seatIds, navigate, setIsCountin
             setRemainingTime(parsedTime);
         } else {
             setRemainingTime(time);
+            localStorage.setItem("remainingTime", JSON.stringify(time));
         }
 
         const timer = setTimeout(() => {
-            setRemainingTime(prevRemainingTime => prevRemainingTime != null ? prevRemainingTime - 1000 : null);
+            setRemainingTime((prevRemainingTime) => (prevRemainingTime != null ? prevRemainingTime - 1000 : null));
         }, 1000);
 
         return () => clearTimeout(timer); // Clean up the timer on component unmount
@@ -59,13 +60,13 @@ export const Counter: React.FC<CounterProps> = ({seatIds, navigate, setIsCountin
     }, [remainingTime]);
 
     return (
-        <Typography component="span" align="center">
+        <Typography component="div" align="center">
             <div className="counter">
-                {remainingTime && (
+                {remainingTime != null && (
                     <Countdown
                         date={Date.now() + remainingTime}
                         onComplete={onComplete}
-                        renderer={(props) => <span>{props.total / 1000}</span>}
+                        renderer={(props) => <span>{Math.floor(props.total / 1000)}</span>}
                         autoStart
                     />
                 )}

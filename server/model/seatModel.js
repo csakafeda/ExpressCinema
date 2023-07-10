@@ -18,7 +18,10 @@ module.exports = {
         const placeholders = seatIds.map(() => '(?)').join(', ');
         const params = [userId, ...seatIds];
 
-        const query = `UPDATE seats SET status = "sold", userId = ? WHERE id IN (${placeholders})`;
+        const query = `UPDATE seats
+                       SET status = "sold",
+                           userId = ?
+                       WHERE id IN (${placeholders})`;
 
         con.query(query, params, callback);
     },
@@ -43,5 +46,15 @@ module.exports = {
                 callback(null, result);
             });
         });
+    },
+    reserveToAvailable: (seatIds, con, callback) => {
+        const placeholders = seatIds.map(() => '(?)').join(', ');
+
+        const query = `UPDATE seats
+                       SET status = "available",
+                           userId = null
+                       WHERE id IN (${placeholders})`;
+
+        con.query(query, ...seatIds, callback);
     }
 }

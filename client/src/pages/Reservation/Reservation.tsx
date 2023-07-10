@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {Box, Button, Card, CardContent, CircularProgress, Grid, TextField, Typography} from "@mui/material";
 import {getAllSeats, purchaseSeats, reserveSeats} from "../../API/seatAPI";
 import {useNavigate} from "react-router-dom";
+import Counter from "./Counter";
 
 const ROWS = ["A", "B", "C", "D", "E"];
 const SEATS_PER_ROW = 6;
@@ -9,9 +10,7 @@ const SEATS_PER_ROW = 6;
 export const Reservation: React.FC = () => {
     const navigate = useNavigate();
 
-    const [seats, setSeats] = useState<
-        { id: number; status: string; userId: number | null }[]
-    >([]);
+    const [seats, setSeats] = useState<{ id: number; status: string; userId: number | null }[]>([]);
     const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
     const [showCard, setShowCard] = useState<boolean>(false);
     const [formData, setFormData] = useState<{
@@ -26,6 +25,7 @@ export const Reservation: React.FC = () => {
         address: "",
     });
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isCounting, setIsCounting] = useState<boolean>(false);
 
     useEffect(() => {
         setIsLoading(true);
@@ -57,6 +57,7 @@ export const Reservation: React.FC = () => {
                 setSelectedSeats(selectedSeats.filter((id) => id !== seatId));
             } else {
                 setSelectedSeats([...selectedSeats, seatId]);
+                setIsCounting(true);
                 reserveSeats(seatId, 1);
             }
         }
@@ -106,26 +107,13 @@ export const Reservation: React.FC = () => {
                             cursor: seatStatus === "available" ? "pointer" : "not-allowed",
                         }}
                         onClick={() => handleSeatClick(seatId, seatStatus)}
-                    ></div>
+                    >{seatId}</div>
                 );
             }
             seatGrid.push(
-                <div
-                    key={ROWS[row]}
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        margin: "10px 0",
-                    }}
-                >
-                    <div style={{width: "20px"}}>{ROWS[row]}</div>
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            gap: "5px",
-                        }}
-                    >
+                <div key={ROWS[row]}
+                     style={{display: "flex", alignItems: "center", margin: "10px 0"}}>
+                    <div style={{display: "flex", justifyContent: "center", gap: "5px"}}>
                         {rowSeats}
                     </div>
                 </div>
@@ -152,6 +140,11 @@ export const Reservation: React.FC = () => {
             <div style={{textAlign: "center", marginTop: "5vh"}}>
                 Make your reservation for tomorrow.
             </div>
+            {isCounting ? (
+                <Counter seatIds={selectedSeats} navigate={navigate} setIsCounting={setIsCounting}/>
+            ) : (
+                <></>
+            )}
             <Grid container style={{justifyContent: "center"}}>
                 <Grid item md={2} style={{justifyContent: "center"}}>
                     {renderSeats()}

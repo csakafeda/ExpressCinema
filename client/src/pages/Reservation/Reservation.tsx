@@ -6,6 +6,13 @@ import Counter from "./Counter";
 
 const ROWS = ["A", "B", "C", "D", "E"];
 const SEATS_PER_ROW = 6;
+const COLOR_SIGNS = [
+    {color: "green", label: "Available Seats"},
+    {color: "yellow", label: "Reserved Seats"},
+    {color: "red", label: "Sold Seats"},
+    {color: "blue", label: "Your selected Seats"},
+    {color: "gray", label: "Unavailable Seats"},
+];
 
 export const Reservation: React.FC = () => {
     const navigate = useNavigate();
@@ -103,17 +110,24 @@ export const Reservation: React.FC = () => {
                             width: "30px",
                             height: "30px",
                             backgroundColor: getSeatColor(seatStatus, seatId),
-                            margin: "5px",
+                            margin: "0.3rem 0.1rem 0.3rem 0.1rem",
                             cursor: seatStatus === "available" ? "pointer" : "not-allowed",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
                         }}
                         onClick={() => handleSeatClick(seatId, seatStatus)}
-                    >{seatId}</div>
+                    >
+                        {seatId}
+                    </div>
                 );
             }
             seatGrid.push(
-                <div key={ROWS[row]}
-                     style={{display: "flex", alignItems: "center", margin: "10px 0"}}>
-                    <div style={{display: "flex", justifyContent: "center", gap: "5px"}}>
+                <div
+                    key={ROWS[row]}
+                    style={{display: "flex", justifyContent: "center", alignItems: "center", margin: "0.3rem 0.1rem"}}
+                >
+                    <div style={{display: "flex", justifyContent: "center", gap: "5px", alignItems: "center"}}>
                         {rowSeats}
                     </div>
                 </div>
@@ -136,7 +150,7 @@ export const Reservation: React.FC = () => {
     }
 
     return (
-        <div style={{paddingBottom: "2rem"}}>
+        <div>
             <div style={{textAlign: "center", marginTop: "5vh"}}>
                 Make your reservation for tomorrow.
             </div>
@@ -145,11 +159,42 @@ export const Reservation: React.FC = () => {
             ) : (
                 <></>
             )}
-            <Grid container style={{justifyContent: "center"}}>
-                <Grid item md={2} style={{justifyContent: "center"}}>
-                    {renderSeats()}
-                </Grid>
-            </Grid>
+            <div style={{display: "flex", alignItems: "center", justifyContent: "center", gap: "2rem" }}>
+                <div style={{padding:"0.3rem",borderStyle:"outset"}}>
+                    <p style={{
+                        minWidth: "100px",
+                        height: "5vh",
+                        background: "black",
+                        color: "white",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center"
+                    }}>
+                        Screen
+                    </p>
+
+                    <Grid container style={{justifyContent: "center"}}>
+                        <Grid item md={2} style={{justifyContent: "center"}}>
+                            {renderSeats()}
+                        </Grid>
+                    </Grid>
+                </div>
+
+                <div style={{backgroundColor: "white"}}>
+                    {COLOR_SIGNS.map((colorSign) => (
+                        <div key={colorSign.color} style={{display: "flex", alignItems: "center", padding: "0.3rem"}}>
+                            <div style={{
+                                width: "15px",
+                                height: "15px",
+                                backgroundColor: colorSign.color,
+                                marginRight: "1vw"
+                            }}/>
+                            <Typography variant="body2">{colorSign.label}</Typography>
+                        </div>
+                    ))
+                    }
+                </div>
+            </div>
             <Box display="flex" justifyContent="center" marginTop="2rem">
                 <Button variant="contained" onClick={handleFormDisplay}>
                     Purchase

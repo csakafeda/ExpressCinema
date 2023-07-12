@@ -14,8 +14,21 @@ const COLOR_SIGNS = [
     {color: "gray", label: "Unavailable Seats"},
 ];
 
-export const Reservation: React.FC = () => {
+
+export const Reservation: React.FC<{ socket: any }> = (props) => {
+    const {socket} = props;
     const navigate = useNavigate();
+    const [message, setMessage] = useState("");
+    const [messageRecieved, setMessageRecieved] = useState("");
+    const sendMessage = () => {
+        socket.emit("send_message", {message});
+    }
+
+    useEffect(() => {
+        socket.on("receive_message", (data: { message: string }) => {
+            setMessageRecieved(data.message);
+        })
+    }, [socket]);
 
     const [seats, setSeats] = useState<{ id: number; status: string; userId: number | null }[]>([]);
     const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
@@ -151,6 +164,10 @@ export const Reservation: React.FC = () => {
 
     return (
         <div>
+            <input onChange={(e) => setMessage(e.target.value)}/>
+            <button onClick={sendMessage}>Send Message</button>
+            <h1>Message:</h1>
+            {messageRecieved}
             <div style={{textAlign: "center", marginTop: "5vh"}}>
                 Make your reservation for tomorrow.
             </div>
@@ -159,8 +176,8 @@ export const Reservation: React.FC = () => {
             ) : (
                 <></>
             )}
-            <div style={{display: "flex", alignItems: "center", justifyContent: "center", gap: "2rem" }}>
-                <div style={{padding:"0.3rem",borderStyle:"outset"}}>
+            <div style={{display: "flex", alignItems: "center", justifyContent: "center", gap: "2rem"}}>
+                <div style={{padding: "0.3rem", borderStyle: "outset"}}>
                     <p style={{
                         minWidth: "100px",
                         height: "5vh",

@@ -28,7 +28,10 @@ const io = require("socket.io")(server, {
 });
 
 io.on("connection", (socket) => {
-    console.log(`user connected ${socket.id}`)
+    console.log(`user connected ${socket.id}`);
+    socket.on("send_message", (data)=>{
+        socket.broadcast.emit("receive_message", data)
+    })
 })
 
 server.listen(8080, () => {

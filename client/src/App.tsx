@@ -6,9 +6,15 @@ import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
 import {Navbar} from "./components/Navbar";
 import {Footer} from "./components/Footer";
 import {themeOptions} from "./Theme";
+import * as io from "socket.io-client";
 
+const socket = io.connect("http://localhost:8080");
 function App() {
     const theme = createTheme(themeOptions);
+    const sendMessage=()=>{
+        console.log(socket.id);
+    }
+
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline/>

@@ -22,17 +22,16 @@ app.use("/api/seats", seatRouter);
 
 const io = require("socket.io")(server, {
     cors: {
-        origin: "http://localhost:3000",
-        methods: ["GET", "POST"]
+        origin: "http://localhost:3000"
     }
 });
 
 io.on("connection", (socket) => {
     console.log(`user connected ${socket.id}`);
-    socket.on("send_message", (data)=>{
-        socket.broadcast.emit("receive_message", data)
-    })
-})
+    socket.on("send_message", (data) => {
+        socket.broadcast.emit("receive_message", data);
+    });
+});
 
 server.listen(8080, () => {
     console.log('Server is running on port 8080.');

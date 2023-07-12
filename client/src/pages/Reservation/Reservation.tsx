@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Box, Button, Card, CardContent, CircularProgress, Grid, Typography} from "@mui/material";
+import {Box, Button, Card, CardContent, CircularProgress, Grid, Typography,} from "@mui/material";
 import {getAllSeats, purchaseSeats, reserveSeats} from "../../API/seatAPI";
 import {useNavigate} from "react-router-dom";
 import Counter from "./Counter";
@@ -12,37 +12,37 @@ const COLOR_SIGNS = [
     {color: "yellow", label: "Reserved Seats"},
     {color: "red", label: "Sold Seats"},
     {color: "blue", label: "Your selected Seats"},
-    {color: "gray", label: "Unavailable Seats"},
 ];
 
 export const Reservation: React.FC<{ socket: any }> = (props) => {
     const {socket} = props;
     const navigate = useNavigate();
 
-    const [seats, setSeats] = useState<{ id: number; status: string; userId: number | null }[]>([]);
+    const [seats, setSeats] = useState<
+        { id: number; status: string; userId: number | null }[]
+    >([]);
     const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
-    const [recievedSelectedSeats, setRecievedSelectedSeats] = useState<number[]>([]);
+    const [receivedSelectedSeats, setReceivedSelectedSeats] = useState<number[]>(
+        []
+    );
     const [showCard, setShowCard] = useState<boolean>(false);
-    const [formData, setFormData] = useState<{
-        firstname: string;
-        lastname: string;
-        email: string;
-        address: string;
-    }>({
-        firstname: "",
-        lastname: "",
-        email: "",
-        address: "",
-    });
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isCounting, setIsCounting] = useState<boolean>(false);
+    const [buttonClicked, setButtonClicked] = useState<boolean>(false);
 
     useEffect(() => {
         socket.on("receive_message", (data: { message: string }) => {
             const parsedSelectedSeats = JSON.parse(data.message);
-            setRecievedSelectedSeats(parsedSelectedSeats);
+            setReceivedSelectedSeats(parsedSelectedSeats);
+            const updatedSeats = seats.map((seat) => {
+                if (parsedSelectedSeats.includes(seat.id)) {
+                    return {...seat, status: "available"};
+                }
+                return seat;
+            });
+            setSeats(updatedSeats);
         });
-    }, [socket]);
+    }, [socket, seats]);
 
     useEffect(() => {
         setIsLoading(true);
@@ -51,12 +51,11 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
             .finally(() => setIsLoading(false));
     }, []);
 
-
     const getSeatColor = (status: string, seatId: number): string => {
         if (selectedSeats.includes(seatId)) {
             return "blue";
         }
-        if (recievedSelectedSeats.includes(seatId)) {
+        if (receivedSelectedSeats.includes(seatId)) {
             return "yellow";
         }
         switch (status) {
@@ -64,30 +63,62 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
                 return "green";
             case "sold":
                 return "red";
+            case "reserved":
+                return selectedSeats.includes(seatId) ? "blue" : "yellow";
             default:
                 return "gray";
         }
     };
 
     const handleSeatClick = (seatId: number, seatStatus: string) => {
-        if (seatStatus === "available" && !recievedSelectedSeats.includes(seatId)) {
-            if (selectedSeats.includes(seatId)) {
-                setSelectedSeats(selectedSeats.filter((id) => id !== seatId));
-            } else {
-                const updatedSelectedSeats = [...selectedSeats, seatId];
-                setSelectedSeats(updatedSelectedSeats);
-                setIsCounting(true);
-                reserveSeats(seatId, 1).then(() => {
-                    socket.emit("send_message", {message: JSON.stringify(updatedSelectedSeats)});
+        if (seatStatus === "available" || seatStatus === "reserved") {
+            const isSelected = selectedSeats.includes(seatId);
+            handleSeatSelection(seatId, isSelected);
+        }
+    };
+
+    const handleSeatSelection = (seatId: number, isSelected: boolean) => {
+        if (isSelected) {
+            const updatedSelectedSeats = selectedSeats.filter((id) => id !== seatId);
+            setSelectedSeats(updatedSelectedSeats);
+            reserveSeats(seatId, 0) // Unreserve the seat
+                .then(() => {
+                    socket.emit("send_message", {
+                        message: JSON.stringify(updatedSelectedSeats),
+                    });
                     const updatedSeats = seats.map((seat) => {
                         if (seat.id === seatId) {
-                            return {...seat, status: "reserved"};
+                            return {...seat, status: "available", userId: null};
                         }
                         return seat;
                     });
                     setSeats(updatedSeats);
+                    setReceivedSelectedSeats(updatedSelectedSeats);
+                })
+                .catch((error) => {
+                    alert("Failed to unreserve seat");
                 });
-            }
+        } else {
+            const updatedSelectedSeats = [...selectedSeats, seatId];
+            setSelectedSeats(updatedSelectedSeats);
+            setIsCounting(true);
+            reserveSeats(seatId, 1) // Reserve the seat
+                .then(() => {
+                    socket.emit("send_message", {
+                        message: JSON.stringify(updatedSelectedSeats),
+                    });
+                    const updatedSeats = seats.map((seat) => {
+                        if (seat.id === seatId) {
+                            return {...seat, status: "reserved", userId: null};
+                        }
+                        return seat;
+                    });
+                    setSeats(updatedSeats);
+                    setReceivedSelectedSeats([...receivedSelectedSeats, seatId]);
+                })
+                .catch((error) => {
+                    alert("Failed to reserve seat");
+                });
         }
     };
 
@@ -95,8 +126,22 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
         setShowCard(true);
     };
 
-    const handlePurchase = (formData: { firstname: string; lastname: string; email: string; address: string }) => {
-        purchaseSeats(selectedSeats, formData);
+    const handlePurchase = (formData: {
+        firstname: string;
+        lastname: string;
+        email: string;
+        address: string;
+    }) => {
+        purchaseSeats(selectedSeats, formData).then(() => {
+            const updatedSeats = seats.map((seat) => {
+                if (selectedSeats.includes(seat.id)) {
+                    return {...seat, status: "sold"};
+                }
+                return seat;
+            });
+            setSeats(updatedSeats);
+        });
+
         alert("Payment successful. Check your email with the confirmation.");
         navigate("/");
     };
@@ -108,6 +153,7 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
             for (let seat = 1; seat <= SEATS_PER_ROW; seat++) {
                 const seatId = row * SEATS_PER_ROW + seat;
                 const seatStatus = getSeatStatus(seatId);
+                const seatColor = getSeatColor(seatStatus, seatId);
                 rowSeats.push(
                     <div
                         key={seatId}
@@ -130,9 +176,21 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
             seatGrid.push(
                 <div
                     key={ROWS[row]}
-                    style={{display: "flex", justifyContent: "center", alignItems: "center", margin: "0.3rem 0.1rem"}}
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        margin: "0.3rem 0.1rem",
+                    }}
                 >
-                    <div style={{display: "flex", justifyContent: "center", gap: "5px", alignItems: "center"}}>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: "5px",
+                            alignItems: "center",
+                        }}
+                    >
                         {rowSeats}
                     </div>
                 </div>
@@ -156,25 +214,33 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
 
     return (
         <div>
-            <div style={{textAlign: "center", marginTop: "5vh"}}>
-                Make your reservation for tomorrow.
-            </div>
+            <h2 style={{textAlign: "center", marginTop: "5vh"}}>
+                Make your reservation for tomorrow's movie.
+            </h2>
+
             {isCounting ? (
-                <Counter seatIds={selectedSeats} navigate={navigate} setIsCounting={setIsCounting}/>
+                <div style={{textAlign: "center", marginTop: "5vh"}}>
+                    We reserve your seats for 2 minutes.
+                    <br/>
+                    Time left: <Counter seatIds={selectedSeats} navigate={navigate} setIsCounting={setIsCounting}/>
+                </div>
             ) : (
                 <></>
             )}
+
             <div style={{display: "flex", alignItems: "center", justifyContent: "center", gap: "2rem"}}>
                 <div style={{padding: "0.3rem", borderStyle: "outset"}}>
-                    <p style={{
-                        minWidth: "100px",
-                        height: "5vh",
-                        background: "black",
-                        color: "white",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center"
-                    }}>
+                    <p
+                        style={{
+                            minWidth: "100px",
+                            height: "5vh",
+                            background: "black",
+                            color: "white",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}
+                    >
                         Screen
                     </p>
 
@@ -196,16 +262,18 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
                             }}/>
                             <Typography variant="body2">{colorSign.label}</Typography>
                         </div>
-                    ))
-                    }
+                    ))}
                 </div>
             </div>
             <Box display="flex" justifyContent="center" marginTop="2rem">
-                <Button variant="contained" onClick={handleFormDisplay}>
+                <Button variant="contained" onClick={() => {
+                    setButtonClicked(true);
+                    handleFormDisplay();
+                }}>
                     Purchase
                 </Button>
             </Box>
-            {showCard && (
+            {showCard && selectedSeats.length > 0 ? (
                 <Grid container justifyContent="center" style={{marginTop: "2rem", marginBottom: "15vh"}}>
                     <Grid item xs={12} md={6}>
                         <Card>
@@ -226,6 +294,15 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
                         </Card>
                     </Grid>
                 </Grid>
+            ) : (
+                <div style={{
+                    display: buttonClicked && selectedSeats.length === 0 ? "block" : "none",
+                    color: "red",
+                    textAlign: "center",
+                    margin: "0.3rem"
+                }}>
+                    You haven't selected any seats.
+                </div>
             )}
         </div>
     );

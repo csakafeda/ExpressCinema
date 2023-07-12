@@ -18,20 +18,10 @@ const COLOR_SIGNS = [
 export const Reservation: React.FC<{ socket: any }> = (props) => {
     const {socket} = props;
     const navigate = useNavigate();
-    const [message, setMessage] = useState("");
-    const [messageRecieved, setMessageRecieved] = useState("");
-    const sendMessage = () => {
-        socket.emit("send_message", {message});
-    }
-
-    useEffect(() => {
-        socket.on("receive_message", (data: { message: string }) => {
-            setMessageRecieved(data.message);
-        })
-    }, [socket]);
 
     const [seats, setSeats] = useState<{ id: number; status: string; userId: number | null }[]>([]);
     const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
+    const [recievedSelectedSeats, setRecievedSelectedSeats] = useState<number[]>([]);
     const [showCard, setShowCard] = useState<boolean>(false);
     const [formData, setFormData] = useState<{
         firstname: string;
@@ -46,6 +36,13 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
     });
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isCounting, setIsCounting] = useState<boolean>(false);
+
+    useEffect(() => {
+        socket.on("receive_message", (data: { message: string }) => {
+            const parsedSelectedSeats = JSON.parse(data.message);
+            setRecievedSelectedSeats(parsedSelectedSeats);
+        });
+    }, [socket]);
 
     useEffect(() => {
         setIsLoading(true);
@@ -76,9 +73,12 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
             if (selectedSeats.includes(seatId)) {
                 setSelectedSeats(selectedSeats.filter((id) => id !== seatId));
             } else {
-                setSelectedSeats([...selectedSeats, seatId]);
+                const updatedSelectedSeats = [...selectedSeats, seatId];
+                setSelectedSeats(updatedSelectedSeats);
                 setIsCounting(true);
-                reserveSeats(seatId, 1);
+                reserveSeats(seatId, 1).then(() => {
+                    socket.emit("send_message", {message: JSON.stringify(updatedSelectedSeats)});
+                });
             }
         }
     };
@@ -164,10 +164,14 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
 
     return (
         <div>
-            <input onChange={(e) => setMessage(e.target.value)}/>
-            <button onClick={sendMessage}>Send Message</button>
-            <h1>Message:</h1>
-            {messageRecieved}
+            <h1>Selected seats by others:</h1>
+            {recievedSelectedSeats.length > 0 && (
+                <div>
+                    {recievedSelectedSeats.map((seatId) => (
+                        <div key={seatId}>{seatId}</div>
+                    ))}
+                </div>
+            )}
             <div style={{textAlign: "center", marginTop: "5vh"}}>
                 Make your reservation for tomorrow.
             </div>

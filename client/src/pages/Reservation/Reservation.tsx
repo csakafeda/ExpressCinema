@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from "react";
-import {Box, Button, Card, CardContent, CircularProgress, Grid, TextField, Typography} from "@mui/material";
+import {Box, Button, Card, CardContent, CircularProgress, Grid, Typography} from "@mui/material";
 import {getAllSeats, purchaseSeats, reserveSeats} from "../../API/seatAPI";
 import {useNavigate} from "react-router-dom";
 import Counter from "./Counter";
+import ReservationForm from "./ReservationForm";
 
 const ROWS = ["A", "B", "C", "D", "E"];
 const SEATS_PER_ROW = 6;
@@ -13,7 +14,6 @@ const COLOR_SIGNS = [
     {color: "blue", label: "Your selected Seats"},
     {color: "gray", label: "Unavailable Seats"},
 ];
-
 
 export const Reservation: React.FC<{ socket: any }> = (props) => {
     const {socket} = props;
@@ -56,11 +56,12 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
         if (selectedSeats.includes(seatId)) {
             return "blue";
         }
+        if (recievedSelectedSeats.includes(seatId)) {
+            return "yellow";
+        }
         switch (status) {
             case "available":
                 return "green";
-            case "reserved":
-                return "yellow";
             case "sold":
                 return "red";
             default:
@@ -69,7 +70,7 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
     };
 
     const handleSeatClick = (seatId: number, seatStatus: string) => {
-        if (seatStatus === "available") {
+        if (seatStatus === "available" && !recievedSelectedSeats.includes(seatId)) {
             if (selectedSeats.includes(seatId)) {
                 setSelectedSeats(selectedSeats.filter((id) => id !== seatId));
             } else {
@@ -78,6 +79,13 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
                 setIsCounting(true);
                 reserveSeats(seatId, 1).then(() => {
                     socket.emit("send_message", {message: JSON.stringify(updatedSelectedSeats)});
+                    const updatedSeats = seats.map((seat) => {
+                        if (seat.id === seatId) {
+                            return {...seat, status: "reserved"};
+                        }
+                        return seat;
+                    });
+                    setSeats(updatedSeats);
                 });
             }
         }
@@ -87,23 +95,7 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
         setShowCard(true);
     };
 
-    const handleFirstnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({...formData, firstname: e.target.value});
-    };
-
-    const handleLastnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({...formData, lastname: e.target.value});
-    };
-
-    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({...formData, email: e.target.value});
-    };
-
-    const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({...formData, address: e.target.value});
-    };
-
-    const handlePurchase = () => {
+    const handlePurchase = (formData: { firstname: string; lastname: string; email: string; address: string }) => {
         purchaseSeats(selectedSeats, formData);
         alert("Payment successful. Check your email with the confirmation.");
         navigate("/");
@@ -164,14 +156,6 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
 
     return (
         <div>
-            <h1>Selected seats by others:</h1>
-            {recievedSelectedSeats.length > 0 && (
-                <div>
-                    {recievedSelectedSeats.map((seatId) => (
-                        <div key={seatId}>{seatId}</div>
-                    ))}
-                </div>
-            )}
             <div style={{textAlign: "center", marginTop: "5vh"}}>
                 Make your reservation for tomorrow.
             </div>
@@ -237,49 +221,7 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
                                         Seat {seatId}
                                     </Typography>
                                 ))}
-                                <form onSubmit={handlePurchase}>
-                                    <TextField
-                                        required
-                                        label="Firstname"
-                                        value={formData.firstname}
-                                        onChange={handleFirstnameChange}
-                                        fullWidth
-                                        margin="normal"
-                                    />
-                                    <TextField
-                                        required
-                                        label="Lastname"
-                                        value={formData.lastname}
-                                        onChange={handleLastnameChange}
-                                        fullWidth
-                                        margin="normal"
-                                    />
-                                    <TextField
-                                        required
-                                        label="Email"
-                                        value={formData.email}
-                                        onChange={handleEmailChange}
-                                        type="email"
-                                        fullWidth
-                                        margin="normal"
-                                    />
-                                    <TextField
-                                        required
-                                        label="Address"
-                                        value={formData.address}
-                                        onChange={handleAddressChange}
-                                        fullWidth
-                                        margin="normal"
-                                    />
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        style={{marginTop: "1rem"}}
-                                        type="submit"
-                                    >
-                                        Confirm Payment
-                                    </Button>
-                                </form>
+                                <ReservationForm handlePurchase={handlePurchase}/>
                             </CardContent>
                         </Card>
                     </Grid>

@@ -2,7 +2,7 @@
 
 # ExpressCinema
 
-![Image](https://github.com/csakafeda/Moodily/assets/105170258/1d596d8c-b033-42d4-bdf8-61fe8aedfb58)
+![Image](https://github.com/csakafeda/Moodily/assets/105170258/2f2b0fac-1180-4335-aaec-a1d208523343)
 
 ### About the project
 

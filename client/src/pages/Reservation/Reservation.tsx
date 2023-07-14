@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from "react";
-import {Box, Button, Card, CardContent, CircularProgress, Grid, TextField, Typography} from "@mui/material";
-import {getAllSeats, purchaseSeats, reserveSeats} from "../../API/seatAPI";
+import {Box, Button, Card, CardContent, CircularProgress, Grid, Typography,} from "@mui/material";
+import {getAllSeats, purchaseSeats, reserveSeats, unreserveSeats} from "../../API/seatAPI";
 import {useNavigate} from "react-router-dom";
 import Counter from "./Counter";
+import ReservationForm from "./ReservationForm";
 
 const ROWS = ["A", "B", "C", "D", "E"];
 const SEATS_PER_ROW = 6;
@@ -11,28 +12,35 @@ const COLOR_SIGNS = [
     {color: "yellow", label: "Reserved Seats"},
     {color: "red", label: "Sold Seats"},
     {color: "blue", label: "Your selected Seats"},
-    {color: "gray", label: "Unavailable Seats"},
 ];
 
-export const Reservation: React.FC = () => {
+export const Reservation: React.FC<{ socket: any }> = (props) => {
+    const {socket} = props;
     const navigate = useNavigate();
 
     const [seats, setSeats] = useState<{ id: number; status: string; userId: number | null }[]>([]);
     const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
+    const [receivedSelectedSeats, setReceivedSelectedSeats] = useState<number[]>([]);
     const [showCard, setShowCard] = useState<boolean>(false);
-    const [formData, setFormData] = useState<{
-        firstname: string;
-        lastname: string;
-        email: string;
-        address: string;
-    }>({
-        firstname: "",
-        lastname: "",
-        email: "",
-        address: "",
-    });
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isCounting, setIsCounting] = useState<boolean>(false);
+    const [buttonClicked, setButtonClicked] = useState<boolean>(false);
+
+    useEffect(() => {
+        socket.on("receive_message", (data: { message: string }) => {
+            const parsedSelectedSeats = JSON.parse(data.message);
+            setReceivedSelectedSeats(parsedSelectedSeats);
+            const updatedSeats = seats.map((seat) => {
+                if (parsedSelectedSeats.includes(seat.id)) {
+                    return {...seat, status: "available"};
+                }
+                return seat;
+            });
+            setSeats(updatedSeats);
+        });
+        getAllSeats()
+            .then((res) => setSeats(res));
+    }, [socket, seats]);
 
     useEffect(() => {
         setIsLoading(true);
@@ -41,18 +49,20 @@ export const Reservation: React.FC = () => {
             .finally(() => setIsLoading(false));
     }, []);
 
-
     const getSeatColor = (status: string, seatId: number): string => {
         if (selectedSeats.includes(seatId)) {
             return "blue";
         }
+        if (receivedSelectedSeats.includes(seatId)) {
+            return "yellow";
+        }
         switch (status) {
             case "available":
                 return "green";
-            case "reserved":
-                return "yellow";
             case "sold":
                 return "red";
+            case "reserved":
+                return selectedSeats.includes(seatId) ? "blue" : "yellow";
             default:
                 return "gray";
         }
@@ -60,38 +70,77 @@ export const Reservation: React.FC = () => {
 
     const handleSeatClick = (seatId: number, seatStatus: string) => {
         if (seatStatus === "available") {
-            if (selectedSeats.includes(seatId)) {
-                setSelectedSeats(selectedSeats.filter((id) => id !== seatId));
-            } else {
-                setSelectedSeats([...selectedSeats, seatId]);
-                setIsCounting(true);
-                reserveSeats(seatId, 1);
-            }
+            handleSeatSelection(seatId);
+        } else if (seatStatus === "reserved" || seatStatus === "selected") {
+            handleSeatDeselection(seatId);
         }
+    };
+
+    const handleSeatSelection = (seatId: number) => {
+        // Check if the seat is already selected
+        if (selectedSeats.includes(seatId)) {
+            return;
+        }
+
+        const updatedSelectedSeats = [...selectedSeats, seatId];
+        setSelectedSeats(updatedSelectedSeats);
+        setIsCounting(true);
+        reserveSeats(seatId, 1) // Reserve the seat
+            .then(() => {
+                socket.emit("send_message", {
+                    message: JSON.stringify(updatedSelectedSeats),
+                });
+                const updatedSeats = seats.map((seat) => {
+                    if (seat.id === seatId) {
+                        return {...seat, status: "reserved", userId: null};
+                    }
+                    return seat;
+                });
+                setSeats(updatedSeats);
+                setReceivedSelectedSeats([...receivedSelectedSeats, seatId]);
+            })
+    };
+
+    const handleSeatDeselection = (seatId: number) => {
+        // Check if the seat is already deselected or not selected
+        if (!selectedSeats.includes(seatId)) {
+            return;
+        }
+
+        const updatedSelectedSeats = selectedSeats.filter((selectedSeat) => selectedSeat !== seatId);
+        setSelectedSeats(updatedSelectedSeats);
+        setIsCounting(false);
+        unreserveSeats(seatId)
+            .then(() => {
+                socket.emit("send_message", {
+                    message: JSON.stringify(updatedSelectedSeats),
+                });
+                const updatedSeats = seats.map((seat) => {
+                    if (seat.id === seatId) {
+                        return {...seat, status: "available", userId: null};
+                    }
+                    return seat;
+                });
+                setSeats(updatedSeats);
+                setReceivedSelectedSeats(receivedSelectedSeats.filter((selectedSeat) => selectedSeat !== seatId));
+            });
     };
 
     const handleFormDisplay = () => {
         setShowCard(true);
     };
 
-    const handleFirstnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({...formData, firstname: e.target.value});
-    };
+    const handlePurchase = (formData: { firstname: string; lastname: string; email: string; address: string }) => {
+        purchaseSeats(selectedSeats, formData).then(() => {
+            const updatedSeats = seats.map((seat) => {
+                if (selectedSeats.includes(seat.id)) {
+                    return {...seat, status: "sold"};
+                }
+                return seat;
+            });
+            setSeats(updatedSeats);
+        });
 
-    const handleLastnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({...formData, lastname: e.target.value});
-    };
-
-    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({...formData, email: e.target.value});
-    };
-
-    const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({...formData, address: e.target.value});
-    };
-
-    const handlePurchase = () => {
-        purchaseSeats(selectedSeats, formData);
         alert("Payment successful. Check your email with the confirmation.");
         navigate("/");
     };
@@ -103,6 +152,7 @@ export const Reservation: React.FC = () => {
             for (let seat = 1; seat <= SEATS_PER_ROW; seat++) {
                 const seatId = row * SEATS_PER_ROW + seat;
                 const seatStatus = getSeatStatus(seatId);
+                const seatColor = getSeatColor(seatStatus, seatId);
                 rowSeats.push(
                     <div
                         key={seatId}
@@ -111,7 +161,7 @@ export const Reservation: React.FC = () => {
                             height: "30px",
                             backgroundColor: getSeatColor(seatStatus, seatId),
                             margin: "0.3rem 0.1rem 0.3rem 0.1rem",
-                            cursor: seatStatus === "available" ? "pointer" : "not-allowed",
+                            cursor: seatColor === "blue" ? "pointer" : seatStatus === "available" ? "pointer" : "not-allowed",
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
@@ -125,9 +175,21 @@ export const Reservation: React.FC = () => {
             seatGrid.push(
                 <div
                     key={ROWS[row]}
-                    style={{display: "flex", justifyContent: "center", alignItems: "center", margin: "0.3rem 0.1rem"}}
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        margin: "0.3rem 0.1rem",
+                    }}
                 >
-                    <div style={{display: "flex", justifyContent: "center", gap: "5px", alignItems: "center"}}>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: "5px",
+                            alignItems: "center",
+                        }}
+                    >
                         {rowSeats}
                     </div>
                 </div>
@@ -151,25 +213,33 @@ export const Reservation: React.FC = () => {
 
     return (
         <div>
-            <div style={{textAlign: "center", marginTop: "5vh"}}>
-                Make your reservation for tomorrow.
-            </div>
+            <h2 style={{textAlign: "center", marginTop: "5vh"}}>
+                Make your reservation for tomorrow's movie.
+            </h2>
+
             {isCounting ? (
-                <Counter seatIds={selectedSeats} navigate={navigate} setIsCounting={setIsCounting}/>
+                <div style={{textAlign: "center", marginTop: "5vh"}}>
+                    We reserve your seats for 2 minutes.
+                    <br/>
+                    Time left: <Counter seatIds={selectedSeats} navigate={navigate} setIsCounting={setIsCounting}/>
+                </div>
             ) : (
                 <></>
             )}
-            <div style={{display: "flex", alignItems: "center", justifyContent: "center", gap: "2rem" }}>
-                <div style={{padding:"0.3rem",borderStyle:"outset"}}>
-                    <p style={{
-                        minWidth: "100px",
-                        height: "5vh",
-                        background: "black",
-                        color: "white",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center"
-                    }}>
+
+            <div style={{display: "flex", alignItems: "center", justifyContent: "center", gap: "2rem"}}>
+                <div style={{padding: "0.3rem", borderStyle: "outset"}}>
+                    <p
+                        style={{
+                            minWidth: "100px",
+                            height: "5vh",
+                            background: "black",
+                            color: "white",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}
+                    >
                         Screen
                     </p>
 
@@ -191,16 +261,18 @@ export const Reservation: React.FC = () => {
                             }}/>
                             <Typography variant="body2">{colorSign.label}</Typography>
                         </div>
-                    ))
-                    }
+                    ))}
                 </div>
             </div>
             <Box display="flex" justifyContent="center" marginTop="2rem">
-                <Button variant="contained" onClick={handleFormDisplay}>
+                <Button variant="contained" onClick={() => {
+                    setButtonClicked(true);
+                    handleFormDisplay();
+                }}>
                     Purchase
                 </Button>
             </Box>
-            {showCard && (
+            {showCard && selectedSeats.length > 0 ? (
                 <Grid container justifyContent="center" style={{marginTop: "2rem", marginBottom: "15vh"}}>
                     <Grid item xs={12} md={6}>
                         <Card>
@@ -216,53 +288,20 @@ export const Reservation: React.FC = () => {
                                         Seat {seatId}
                                     </Typography>
                                 ))}
-                                <form onSubmit={handlePurchase}>
-                                    <TextField
-                                        required
-                                        label="Firstname"
-                                        value={formData.firstname}
-                                        onChange={handleFirstnameChange}
-                                        fullWidth
-                                        margin="normal"
-                                    />
-                                    <TextField
-                                        required
-                                        label="Lastname"
-                                        value={formData.lastname}
-                                        onChange={handleLastnameChange}
-                                        fullWidth
-                                        margin="normal"
-                                    />
-                                    <TextField
-                                        required
-                                        label="Email"
-                                        value={formData.email}
-                                        onChange={handleEmailChange}
-                                        type="email"
-                                        fullWidth
-                                        margin="normal"
-                                    />
-                                    <TextField
-                                        required
-                                        label="Address"
-                                        value={formData.address}
-                                        onChange={handleAddressChange}
-                                        fullWidth
-                                        margin="normal"
-                                    />
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        style={{marginTop: "1rem"}}
-                                        type="submit"
-                                    >
-                                        Confirm Payment
-                                    </Button>
-                                </form>
+                                <ReservationForm handlePurchase={handlePurchase}/>
                             </CardContent>
                         </Card>
                     </Grid>
                 </Grid>
+            ) : (
+                <div style={{
+                    display: buttonClicked && selectedSeats.length === 0 ? "block" : "none",
+                    color: "red",
+                    textAlign: "center",
+                    margin: "0.3rem"
+                }}>
+                    You haven't selected any seats.
+                </div>
             )}
         </div>
     );

@@ -51,7 +51,6 @@ After the booking has been successfully made, send an email to the customer's em
 - Open **localhost:3000** in your browser to access the application
 
 ### Future plans for the project
-- add websocket to handle multiple users
 - make unit tests for backend
 - rewrite it in nuxt.js 
 

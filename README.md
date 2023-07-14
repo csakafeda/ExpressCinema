@@ -6,7 +6,8 @@
 
 ### About the project
 
-This is a little website, where you can reserve seats in an outdoor cinema for your favorite movies.
+This is a website, where you can reserve seats in an outdoor cinema for your favorit movies.
+If someone already selected/bought the seats, you cannot buy that seat for the movie :(
 
 The projects tasks are:    
 You are given a cinema, a room with 2 free seats. (+ I've done more seats, to be more "cinema like".)
@@ -43,7 +44,7 @@ After the booking has been successfully made, send an email to the customer's em
   EMAIL_PASSWORD=
   ```
   - open server folder in the terminal and run ```npm start```
-  - make as many post request as many seats you want to be available this endpoint: http://localhost:8080/api/seats/add_seat (max 30)
+  - make as many post request as many seats you want to be available this endpoint: http://localhost:8080/api/seats/add_seat (don't need request body, max 30)
 - Frontend
   - Open the client folder in the terminal and run ```npm install``` to install the necessary dependencies
   - Run ```npm start``` to start the React server 

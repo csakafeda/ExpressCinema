@@ -45,3 +45,19 @@ export const purchaseSeats = (seats, formData) => {
             console.error("Error making payment:", error);
         });
 }
+
+export const unreserveSeats = (seatId) => {
+    return fetch("http://localhost:8080/api/seats/reserve_expire", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({seatIds: [seatId]})
+    })
+        .then((response) => {
+            console.log(response);
+        })
+        .catch((error) => {
+            console.error("Error making reservation:", error);
+        });
+}

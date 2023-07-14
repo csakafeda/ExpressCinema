@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {Box, Button, Card, CardContent, CircularProgress, Grid, Typography,} from "@mui/material";
-import {getAllSeats, purchaseSeats, reserveSeats} from "../../API/seatAPI";
+import {getAllSeats, purchaseSeats, reserveSeats, unreserveSeats} from "../../API/seatAPI";
 import {useNavigate} from "react-router-dom";
 import Counter from "./Counter";
 import ReservationForm from "./ReservationForm";
@@ -18,13 +18,9 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
     const {socket} = props;
     const navigate = useNavigate();
 
-    const [seats, setSeats] = useState<
-        { id: number; status: string; userId: number | null }[]
-    >([]);
+    const [seats, setSeats] = useState<{ id: number; status: string; userId: number | null }[]>([]);
     const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
-    const [receivedSelectedSeats, setReceivedSelectedSeats] = useState<number[]>(
-        []
-    );
+    const [receivedSelectedSeats, setReceivedSelectedSeats] = useState<number[]>([]);
     const [showCard, setShowCard] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isCounting, setIsCounting] = useState<boolean>(false);
@@ -42,6 +38,8 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
             });
             setSeats(updatedSeats);
         });
+        getAllSeats()
+            .then((res) => setSeats(res));
     }, [socket, seats]);
 
     useEffect(() => {
@@ -71,67 +69,68 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
     };
 
     const handleSeatClick = (seatId: number, seatStatus: string) => {
-        if (seatStatus === "available" || seatStatus === "reserved") {
-            const isSelected = selectedSeats.includes(seatId);
-            handleSeatSelection(seatId, isSelected);
+        if (seatStatus === "available") {
+            handleSeatSelection(seatId);
+        } else if (seatStatus === "reserved" || seatStatus === "selected") {
+            handleSeatDeselection(seatId);
         }
     };
 
-    const handleSeatSelection = (seatId: number, isSelected: boolean) => {
-        if (isSelected) {
-            const updatedSelectedSeats = selectedSeats.filter((id) => id !== seatId);
-            setSelectedSeats(updatedSelectedSeats);
-            reserveSeats(seatId, 0) // Unreserve the seat
-                .then(() => {
-                    socket.emit("send_message", {
-                        message: JSON.stringify(updatedSelectedSeats),
-                    });
-                    const updatedSeats = seats.map((seat) => {
-                        if (seat.id === seatId) {
-                            return {...seat, status: "available", userId: null};
-                        }
-                        return seat;
-                    });
-                    setSeats(updatedSeats);
-                    setReceivedSelectedSeats(updatedSelectedSeats);
-                })
-                .catch((error) => {
-                    alert("Failed to unreserve seat");
-                });
-        } else {
-            const updatedSelectedSeats = [...selectedSeats, seatId];
-            setSelectedSeats(updatedSelectedSeats);
-            setIsCounting(true);
-            reserveSeats(seatId, 1) // Reserve the seat
-                .then(() => {
-                    socket.emit("send_message", {
-                        message: JSON.stringify(updatedSelectedSeats),
-                    });
-                    const updatedSeats = seats.map((seat) => {
-                        if (seat.id === seatId) {
-                            return {...seat, status: "reserved", userId: null};
-                        }
-                        return seat;
-                    });
-                    setSeats(updatedSeats);
-                    setReceivedSelectedSeats([...receivedSelectedSeats, seatId]);
-                })
-                .catch((error) => {
-                    alert("Failed to reserve seat");
-                });
+    const handleSeatSelection = (seatId: number) => {
+        // Check if the seat is already selected
+        if (selectedSeats.includes(seatId)) {
+            return;
         }
+
+        const updatedSelectedSeats = [...selectedSeats, seatId];
+        setSelectedSeats(updatedSelectedSeats);
+        setIsCounting(true);
+        reserveSeats(seatId, 1) // Reserve the seat
+            .then(() => {
+                socket.emit("send_message", {
+                    message: JSON.stringify(updatedSelectedSeats),
+                });
+                const updatedSeats = seats.map((seat) => {
+                    if (seat.id === seatId) {
+                        return {...seat, status: "reserved", userId: null};
+                    }
+                    return seat;
+                });
+                setSeats(updatedSeats);
+                setReceivedSelectedSeats([...receivedSelectedSeats, seatId]);
+            })
+    };
+
+    const handleSeatDeselection = (seatId: number) => {
+        // Check if the seat is already deselected or not selected
+        if (!selectedSeats.includes(seatId)) {
+            return;
+        }
+
+        const updatedSelectedSeats = selectedSeats.filter((selectedSeat) => selectedSeat !== seatId);
+        setSelectedSeats(updatedSelectedSeats);
+        setIsCounting(false);
+        unreserveSeats(seatId)
+            .then(() => {
+                socket.emit("send_message", {
+                    message: JSON.stringify(updatedSelectedSeats),
+                });
+                const updatedSeats = seats.map((seat) => {
+                    if (seat.id === seatId) {
+                        return {...seat, status: "available", userId: null};
+                    }
+                    return seat;
+                });
+                setSeats(updatedSeats);
+                setReceivedSelectedSeats(receivedSelectedSeats.filter((selectedSeat) => selectedSeat !== seatId));
+            });
     };
 
     const handleFormDisplay = () => {
         setShowCard(true);
     };
 
-    const handlePurchase = (formData: {
-        firstname: string;
-        lastname: string;
-        email: string;
-        address: string;
-    }) => {
+    const handlePurchase = (formData: { firstname: string; lastname: string; email: string; address: string }) => {
         purchaseSeats(selectedSeats, formData).then(() => {
             const updatedSeats = seats.map((seat) => {
                 if (selectedSeats.includes(seat.id)) {
@@ -162,7 +161,7 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
                             height: "30px",
                             backgroundColor: getSeatColor(seatStatus, seatId),
                             margin: "0.3rem 0.1rem 0.3rem 0.1rem",
-                            cursor: seatStatus === "available" ? "pointer" : "not-allowed",
+                            cursor: seatColor === "blue" ? "pointer" : seatStatus === "available" ? "pointer" : "not-allowed",
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",

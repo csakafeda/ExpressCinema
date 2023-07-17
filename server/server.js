@@ -4,7 +4,9 @@ const http = require("http");
 const server = http.createServer(app);
 const cors = require('cors');
 const seatRouter = require("./routes/seatRouter");
-const con = require("./config/db.js")
+const con = require("./config/db.js");
+require('dotenv').config();
+
 
 app.use(cors());
 app.use(express.json());
@@ -33,6 +35,6 @@ io.on("connection", (socket) => {
     });
 });
 
-server.listen(8080, () => {
+server.listen(process.env.PORT || 8080, () => {
     console.log('Server is running on port 8080.');
 });

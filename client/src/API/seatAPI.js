@@ -1,5 +1,7 @@
+const baseUrl = "http://express-cinema-backend.vercel.app";
+
 export const getAllSeats = () => {
-    return fetch("http://localhost:8080/api/seats")
+    return fetch(baseUrl + "/api/seats")
         .then((res) => res.json())
         .catch((error) => {
             console.error("Error fetching seats:", error);
@@ -7,7 +9,7 @@ export const getAllSeats = () => {
 };
 
 export const reserveSeats = (seat, userId) => {
-    return fetch("http://localhost:8080/api/seats/reserve", {
+    return fetch(baseUrl + "/api/seats/reserve", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -27,7 +29,7 @@ export const reserveSeats = (seat, userId) => {
 }
 
 export const purchaseSeats = (seats, formData) => {
-    return fetch("http://localhost:8080/api/seats/pay", {
+    return fetch(baseUrl + "/api/seats/pay", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -47,7 +49,7 @@ export const purchaseSeats = (seats, formData) => {
 }
 
 export const unreserveSeats = (seatId) => {
-    return fetch("http://localhost:8080/api/seats/reserve_expire", {
+    return fetch(baseUrl + "/api/seats/reserve_expire", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"

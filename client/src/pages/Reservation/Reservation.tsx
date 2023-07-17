@@ -77,10 +77,7 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
     };
 
     const handleSeatSelection = (seatId: number) => {
-        // Check if the seat is already selected
-        if (selectedSeats.includes(seatId)) {
-            return;
-        }
+        if (selectedSeats.includes(seatId)) return;
 
         const updatedSelectedSeats = [...selectedSeats, seatId];
         setSelectedSeats(updatedSelectedSeats);
@@ -102,14 +99,15 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
     };
 
     const handleSeatDeselection = (seatId: number) => {
-        // Check if the seat is already deselected or not selected
         if (!selectedSeats.includes(seatId)) {
             return;
         }
 
         const updatedSelectedSeats = selectedSeats.filter((selectedSeat) => selectedSeat !== seatId);
         setSelectedSeats(updatedSelectedSeats);
-        setIsCounting(false);
+        if (selectedSeats.length === 0) {
+            setIsCounting(false);
+        }
         unreserveSeats(seatId)
             .then(() => {
                 socket.emit("send_message", {
@@ -217,15 +215,7 @@ export const Reservation: React.FC<{ socket: any }> = (props) => {
                 Make your reservation for tomorrow's movie.
             </h2>
 
-            {isCounting ? (
-                <div style={{textAlign: "center", marginTop: "5vh"}}>
-                    We reserve your seats for 2 minutes.
-                    <br/>
-                    Time left: <Counter seatIds={selectedSeats} navigate={navigate} setIsCounting={setIsCounting}/>
-                </div>
-            ) : (
-                <></>
-            )}
+            <Counter seatIds={selectedSeats} navigate={navigate} setIsCounting={setIsCounting} isCounting={isCounting}/>
 
             <div style={{display: "flex", alignItems: "center", justifyContent: "center", gap: "2rem"}}>
                 <div style={{padding: "0.3rem", borderStyle: "outset"}}>

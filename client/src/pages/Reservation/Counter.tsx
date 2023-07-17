@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { Typography } from "@mui/material";
+import React, {useEffect, useState} from "react";
+import {Typography} from "@mui/material";
 import Countdown from "react-countdown";
-import { NavigateFunction } from "react-router-dom";
+import {NavigateFunction} from "react-router-dom";
 
 interface CounterProps {
     seatIds: number[];
     navigate: NavigateFunction;
     setIsCounting: React.Dispatch<React.SetStateAction<boolean>>;
+    isCounting: boolean
 }
 
-const Counter: React.FC<CounterProps> = ({ seatIds, navigate, setIsCounting }) => {
+const Counter: React.FC<CounterProps> = ({seatIds, navigate, setIsCounting, isCounting}) => {
     const time = 120000;
     const [remainingTime, setRemainingTime] = useState<number | null>(time);
 
@@ -19,9 +20,9 @@ const Counter: React.FC<CounterProps> = ({ seatIds, navigate, setIsCounting }) =
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ seatIds: seatIds })
+            body: JSON.stringify({seatIds: seatIds})
         })
-            .then((response) => {
+            .then(() => {
                 alert("Your reservation time is up!");
             })
             .catch((error) => {
@@ -34,44 +35,48 @@ const Counter: React.FC<CounterProps> = ({ seatIds, navigate, setIsCounting }) =
     };
 
     useEffect(() => {
-        const storedRemainingTime = localStorage.getItem("remainingTime");
-        if (storedRemainingTime) {
-            const parsedTime = JSON.parse(storedRemainingTime);
-            setRemainingTime(parsedTime);
-        } else {
-            setRemainingTime(time);
-            localStorage.setItem("remainingTime", JSON.stringify(time));
-        }
-
-        const timer = setTimeout(() => {
-            setRemainingTime((prevRemainingTime) => (prevRemainingTime != null ? prevRemainingTime - 1000 : null));
-        }, 1000);
-
-        return () => clearTimeout(timer); // Clean up the timer on component unmount
-    }, []);
-
-    useEffect(() => {
         if (remainingTime !== null) {
-            localStorage.setItem("remainingTime", JSON.stringify(remainingTime));
             if (remainingTime <= 0) {
                 onComplete();
             }
         }
-    }, [remainingTime]);
+        const interval = setInterval(() => {
+            setRemainingTime((prevRemainingTime) =>
+                prevRemainingTime != null ? prevRemainingTime - 1000 : null
+            );
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+        if (isCounting && seatIds.length > 0) {
+            setRemainingTime(time);
+        }
+    }, [seatIds, isCounting]);
 
     return (
-        <Typography component="div" align="center">
-            <div className="counter">
-                {remainingTime != null && (
-                    <Countdown
-                        date={Date.now() + remainingTime}
-                        onComplete={onComplete}
-                        renderer={(props) => <span>{Math.floor(props.total / 1000)}</span>}
-                        autoStart
-                    />
-                )}
-            </div>
-        </Typography>
+        <>
+            {isCounting ? (
+                <div style={{textAlign: "center", marginTop: "5vh"}}>
+                    We reserve your seats for 2 minutes. If you are not interact with the page, your reservation will be lost.
+                    <br/>
+                    Time left:
+                    <Typography component="div" align="center">
+                        {remainingTime != null && (
+                            <Countdown
+                                date={Date.now() + remainingTime}
+                                onComplete={onComplete}
+                                renderer={(props) => <span>{Math.floor(props.total / 1000)}</span>}
+                                autoStart
+                            />
+                        )}
+                    </Typography>
+                </div>
+            ) : (
+                <></>
+            )}
+        </>
     );
 };
 

@@ -55,7 +55,9 @@ export const unreserveSeats = (seatId) => {
         body: JSON.stringify({seatIds: [seatId]})
     })
         .then((response) => {
-            console.log(response);
+            if (response.ok) {
+                console.log("Unreserved successful!");
+            }
         })
         .catch((error) => {
             console.error("Error making reservation:", error);

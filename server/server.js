@@ -22,6 +22,10 @@ app.use(function (req, res, next) {
 
 app.use("/api/seats", seatRouter);
 
+app.get('/', (req, res) => {
+    res.send('hello world')
+})
+
 const io = require("socket.io")(server, {
     cors: {
         origin: "http://localhost:3000"

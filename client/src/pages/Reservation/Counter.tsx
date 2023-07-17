@@ -35,6 +35,11 @@ const Counter: React.FC<CounterProps> = ({seatIds, navigate, setIsCounting, isCo
     };
 
     useEffect(() => {
+        if (remainingTime !== null) {
+            if (remainingTime <= 0) {
+                onComplete();
+            }
+        }
         const interval = setInterval(() => {
             setRemainingTime((prevRemainingTime) =>
                 prevRemainingTime != null ? prevRemainingTime - 1000 : null
@@ -43,14 +48,6 @@ const Counter: React.FC<CounterProps> = ({seatIds, navigate, setIsCounting, isCo
 
         return () => clearInterval(interval);
     }, []);
-
-    useEffect(() => {
-        if (remainingTime !== null) {
-            if (remainingTime <= 0) {
-                onComplete();
-            }
-        }
-    }, [remainingTime]);
 
     useEffect(() => {
         if (isCounting && seatIds.length > 0) {
@@ -62,20 +59,18 @@ const Counter: React.FC<CounterProps> = ({seatIds, navigate, setIsCounting, isCo
         <>
             {isCounting ? (
                 <div style={{textAlign: "center", marginTop: "5vh"}}>
-                    We reserve your seats for 2 minutes.
+                    We reserve your seats for 2 minutes. If you are not interact with the page, your reservation will be lost.
                     <br/>
                     Time left:
                     <Typography component="div" align="center">
-                        <div className="counter">
-                            {remainingTime != null && (
-                                <Countdown
-                                    date={Date.now() + remainingTime}
-                                    onComplete={onComplete}
-                                    renderer={(props) => <span>{Math.floor(props.total / 1000)}</span>}
-                                    autoStart
-                                />
-                            )}
-                        </div>
+                        {remainingTime != null && (
+                            <Countdown
+                                date={Date.now() + remainingTime}
+                                onComplete={onComplete}
+                                renderer={(props) => <span>{Math.floor(props.total / 1000)}</span>}
+                                autoStart
+                            />
+                        )}
                     </Typography>
                 </div>
             ) : (

@@ -36,15 +36,15 @@ module.exports = {
             if (result.length === 0) {
                 res.status(404).json({error: "Seat not found or already reserved."});
             }
+            seatModel.updateToReserved(seatId, userId, req.con, (err) => {
+                if (err) {
+                    console.error(err);
+                    res.status(500).json({error: 'Failed to reserve the seat.'});
+                    return;
+                }
+                res.json({message: 'Reservation successful.'});
+            })
         });
-        seatModel.updateToReserved(seatId, userId, req.con, (err) => {
-            if (err) {
-                console.error(err);
-                res.status(500).json({error: 'Failed to reserve the seat.'});
-                return;
-            }
-            res.json({message: 'Reservation successful.'});
-        })
     },
     paySeats: (req, res) => {
         const seatIds = req.body.seatIds;

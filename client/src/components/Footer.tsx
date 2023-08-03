@@ -36,7 +36,7 @@ export const Footer: React.FC = () => {
             <Box style={{margin: "10px"}}>
                 <Typography variant="h6">Follow us</Typography>
                 <a
-                    href="https://www.facebook.com/bardiauto"
+                    href="https://www.facebook.com/XpressCinema/"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -55,7 +55,7 @@ export const Footer: React.FC = () => {
                     Facebook
                 </a>
                 <a
-                    href="https://www.instagram.com/bardiauto/?hl=en"
+                    href="https://www.instagram.com/xpresscinema/"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{

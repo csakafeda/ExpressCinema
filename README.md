@@ -9,17 +9,6 @@
 This is a website, where you can reserve seats in an outdoor cinema for your favorit movies.
 If someone already selected/bought the seats, you cannot buy that seat for the movie :(
 
-The projects tasks are:    
-You are given a cinema, a room with 2 free seats. (+ I've done more seats, to be more "cinema like".)
-1. Make sure you can book these free seats via the web! 
-2. Only 1 successful reservation per seat is possible at a time.
-3. A user can book 1 or 2 free seats.
-4. In case of unsuccessful "payment", the reservation will be released after 2 minutes! 
-5. Users can see the status of the chairs: *"free" = green; "reserved" = yellow; "sold out" = red; "reserved by you" = blue*
-6. After a successful reservation, as payment, please enter the customer's email address and send an email with the following information
-After the booking has been successfully made, send an email to the customer's email address to confirm the successful booking and change the status of the chair to "sold"!
-(7. When solving the problem, it's not the display that matters, but the simultaneous bookings exclusion of simultaneous bookings)
-
 ### Built With
 
 - [![React][React-badge]][React-url]

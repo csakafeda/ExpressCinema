@@ -17,7 +17,7 @@ If someone already selected/bought the seats, you cannot buy that seat for the m
 - [![Express.js][Express-badge]][Express-url]
 - [![MySQL][MySQL-badge]][MySQL-url]
 
-### Installation
+### Building & running
 
 - Clone the repository
 - Backend
@@ -40,7 +40,8 @@ If someone already selected/bought the seats, you cannot buy that seat for the m
 - Open **localhost:3000** in your browser to access the application
 
 ### Future plans for the project
-- make unit tests for backend
+- write unit tests
+- make it more real life like (more movies, trailers..)
 - rewrite it in nuxt.js 
 
 [linkedin-shield-csakafeda]: https://img.shields.io/badge/-Feodóra%20Bakó-black.svg?style=for-the-badge&logo=linkedin&colorB=555
